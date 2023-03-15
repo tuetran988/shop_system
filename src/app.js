@@ -10,19 +10,15 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
 
-//init database
+//INIT DATABASE
 require('./dbs/init.mongodb')
-const { checkOverLoad } = require('./helpers/check.connect')
-checkOverLoad()
-//init routes
+// const { checkOverLoad } = require('./helpers/check.connect')
+// checkOverLoad()
 
-app.get("/", (req, res, next) => {
-  const string = "tuetrancao";
-  return res.status(200).json({
-    msg: "oke",
-    data: string.repeat(10000),
-  });
-});
+
+//INIT ROUTES
+app.use('/',require('./routes'))
+
 //handling error
 
 module.exports = app;
