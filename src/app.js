@@ -9,7 +9,9 @@ const app = express();
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-
+// body-parser
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 //INIT DATABASE
 require('./dbs/init.mongodb')
 // const { checkOverLoad } = require('./helpers/check.connect')

@@ -3,5 +3,12 @@
 
 ##### signup
 POST {{url_dev}}/shop/signup
+Content-Type: application/json
+
+{
+    "name" : "Shop TueMeo",
+    "email":"tuemeoa13@gmail.com",
+    "password":"abc123"
+}
 
 
