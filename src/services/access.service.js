@@ -4,6 +4,12 @@ const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
+const { findByEmail } = require("./shop.service");
+
+const {
+  BadRequestError,
+  ConflictRequestError,
+} = require("../core/error.response");
 const RoleShop = {
   SHOP: "SHOP",
   WRITER: "WRITER",
@@ -17,10 +23,7 @@ class AccessService {
       //step1 check email exist
       const hodelShop = await shopModel.findOne({ email }).lean(); //.lean() giúp lấy về 1 object thuần túy giám tải nhiều hơn
       if (!!hodelShop) {
-        return {
-          code: "xxxx",
-          message: "Shop already registed",
-        };
+        throw new BadRequestError("Error: shop already registered!");
       }
       const passwordHash = await bcrypt.hash(password, 10);
 
@@ -31,42 +34,24 @@ class AccessService {
         role: RoleShop.SHOP,
       });
       if (newShop) {
-        //created privateKey and publicKey
-        // privateKey là khi tạo xong sẽ đẩy về cho người dùng chứ không lưu ở hệ thống - dùng trong sign token
-        // publicKey thì lưu ở hệ thống dùng để verify token
-        // giảm sự rủi ro khi hacker tấn công và lấy đi 2 key trên
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
 
-        const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: "pkcs1", //Public key cryptography standards
-            format: "pem",
-          },
-          privateKeyEncoding: {
-            type: "pkcs1",
-            format: "pem",
-          },
-        }); //sử dụng thuật toán bất đối xứng
-        console.log("show two key", { privateKey, publicKey }); // save to collection KeyStore
-        // => ĐÂY LÀ CÁCH CHỈ SỬ DỤNG CHO HỆ THỐNG LỚN VÌ THẾ ĐỂ ĐƠN GIẢN THÌ THEO PHƯƠNG ÁN DƯỚI ĐÂY:
-
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
           publicKey,
+          privateKey,
         });
-        if (!publicKeyString) {
+        if (!keyStore) {
           return {
             code: "xxxx",
-            message: "publicKey error",
+            message: "keyStore error",
           };
         }
-        // Lúc này sau khi lấy từ DB ra thì publicKeyString có dạng là string
-        const publicKeyObject = crypto.createPublicKey(publicKeyString);
-
         // nếu thành công trong việc đăng kí và tạo key thì sẽ trả về token cho client
         const tokens = await createTokenPair(
           { userId: newShop._id, email },
-          publicKeyObject,
+          publicKey,
           privateKey
         );
         console.log(`Created token success:::: ${tokens}`);
@@ -74,7 +59,7 @@ class AccessService {
           code: 201,
           metadata: {
             shop: getInfoData([
-              { fields: ["_id", "name", "email"], object: newShop },
+              { fields: ["_id", "name", "email"], object: newShop }, //sử dung lodash chỉ lấy những trường như vậy
             ]),
             tokens,
           },
@@ -91,6 +76,53 @@ class AccessService {
         status: "error",
       };
     }
+  };
+
+  static login = async ({ email, password, refreshToken = null }) => {
+    // check email in dbs
+    // match password
+    // create accesstoken and refreshToken
+    //generate token
+    //get data return login
+    //step1
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) {
+      throw new BadRequestError("Shop is not registered");
+    }
+    //step2
+    const match = await bcrypt.compare(password, foundShop.password);
+    if (!match) {
+      throw new AuthFailureError("Authen Error ");
+    }
+    //step3
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = crypto.randomBytes(64).toString("hex");
+    //step4
+    const tokens = await createTokenPair(
+      { userId: foundShop._id, email },
+      publicKey,
+      privateKey
+    );
+
+    await KeyTokenService.createKeyToken({
+      userId: foundShop._id,
+      publicKey,
+      privateKey,
+      refreshToken: tokens.refreshToken,
+    });
+
+    return {
+      shop: getInfoData([
+        { fields: ["_id", "name", "email"], object: foundShop }, //sử dung lodash chỉ lấy những trường như vậy
+      ]),
+      tokens,
+    };
+  };
+
+  static logout = async (keyStore) => {
+    const delKey = await KeyTokenService.removeKeyById(keyStore._id);
+    console.log({ delKey });
+    return delKey;
   };
 }
 
