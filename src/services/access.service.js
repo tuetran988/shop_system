@@ -125,6 +125,11 @@ class AccessService {
     console.log({ delKey });
     return delKey;
   };
+  /**
+   *
+   * hàm handle refreshToken có tác dụng khi 1 accessToken hết hạn thì ta sử dụng
+   * để gọi lấy về 1 cặp accessToken và RefreshToken mới
+   */
   static handlerRefreshToken = async (refreshToken) => {
     // refreshTokensUsed
     const foundToken = await KeyTokenService.findByRefreshTokenUsed(
