@@ -1,20 +1,47 @@
 const keyTokenModel = require("../models/keytoken.model");
-
+const { Types } = require("mongoose");
+const { ObjectId } = require("mongodb");
 class KeyTokenService {
-  static createKeyToken = async ({ userId, publicKey }) => {
+  static createKeyToken = async ({ userId, publicKey, privateKey ,refreshToken}) => {
     try {
-      //publicKey được sinh ra từ thuât toán bất đối xứng nên nó có dạng buffer vì thế khi lưu vào database gây ra lỗi
-      //vì thế nên chuyển về dạng string
-      const publicKeyString = publicKey.toString();
-      const tokens = await keyTokenModel.create({
-        user: userId,
-        publicKey: publicKeyString,
-      });
-        return tokens ? tokens.publicKey : null
+      //level 0
+      // const tokens = await keyTokenModel.create({
+      //   user: userId,
+      //   publicKey,
+      //   privateKey,
+      // });
+      // return tokens ? tokens.publicKey : null;
+
+      //level xx
+      const filter = { user: userId }
+      const update = { publicKey, privateKey, refreshTokensUsed: [], refreshToken }
+      const options = {upsert: true , new: true}
+      const tokens = await keyTokenModel.findOneAndUpdate(filter, update,options);
+      return tokens ? tokens.publicKey : null;
+
     } catch (error) {
       return error;
     }
   };
+
+  static findByUserId = async (userId) => {
+    return await keyTokenModel.findOne({ user: new ObjectId(userId) })
+  }
+  static removeKeyById = async (id) => {
+     return await keyTokenModel.deleteMany({ _id: id });
+  }
+
+  static findByRefreshTokenUsed = async (refreshToken) => {
+    return await keyTokenModel.findOne({ refreshTokensUsed: refreshToken})
+  }
+
+  static deleteKeyById = async (userId) => {
+    return await keyTokenModel.findOneAndDelete({ user: userId });
+  }
+  static findByRefreshToken = async (refreshToken) => {
+    return await keyTokenModel.findOne({ refreshToken})
+  }
+  
 }
 
 module.exports = KeyTokenService;

@@ -4,11 +4,31 @@
 ##### signup
 POST {{url_dev}}/shop/signup
 Content-Type: application/json
+x-api-key: dc01c9cc926bbace168d6aaa6d28a802ae0bf2cbed63eeef42dc4e59519e8a1a8876bd3cb5be19bc1a344dbcc10260d89680f16fdf4342390627f014938b0825
 
 {
     "name" : "Shop TueMeo",
-    "email":"tuemeoa13@gmail.com",
+    "email":"test@gmail.com",
     "password":"abc123"
 }
 
+
+##### login
+POST {{url_dev}}/shop/login
+Content-Type: application/json
+x-api-key: dc01c9cc926bbace168d6aaa6d28a802ae0bf2cbed63eeef42dc4e59519e8a1a8876bd3cb5be19bc1a344dbcc10260d89680f16fdf4342390627f014938b0825
+
+{
+    "email":"test@gmail.com",
+    "password":"abc123"
+}
+
+
+
+##### logout
+POST {{url_dev}}/shop/logout
+Content-Type: application/json
+x-api-key:  9e623a45504f1345ba26543cac75abeda5740b915a9a2bc6049aaed921bedb1811223192dd31043fda68aeee0e8207f955da2bcea10d7388c42b89a71ee07560
+x-client-id: 641526ffd84a505dd2a9fe91
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDE0NGQ5ZjA3MWYyMTNhMTZlNzYwNWMiLCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwiaWF0IjoxNjc5MDcxMTc5LCJleHAiOjE2NzkyNDM5Nzl9.BMPkHztnVHr84MbRZNYFWuSXiMgSnT5OOasCXDgLxrY
 
