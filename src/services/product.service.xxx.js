@@ -67,7 +67,7 @@ class ProductFactory {
       sort,
       page,
       filter,
-      select: ["product_name", "product_price", "product_thumb"],
+      select: ["product_name", "product_price", "product_thumb","product_shop"],
     });
     // ctime tuc la dung de sap xep theo thoi gian moi nhat truoc
   }
