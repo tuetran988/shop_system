@@ -17,6 +17,7 @@ var discountSchema = new Schema(
     discount_users_used: { type: Array, default: [] }, //ai đã sử dụng discount này
     discount_max_uses_per_user: { type: Number, required: true }, // số lượng cho phép tối đa đc sử dụng trên mỗi user
     discount_min_order_value: { type: Number, required: true }, // giá trị đơn hàng tối thiểu được áp dụng
+    discount_max_value: { type: Number, required: true }, 
     discount_shopId: { type: Schema.Types.ObjectId, ref: "Shop" },
     discount_is_active: { type: Boolean, default: true },
     discount_applies_to: { type: String, required: true, enum: ['all', 'specific'] },
